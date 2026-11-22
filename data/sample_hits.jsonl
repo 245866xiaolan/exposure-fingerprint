@@ -1,0 +1,23 @@
+{"ip": "203.0.113.10", "port": 6379, "svc": "REDIS", "ev": "/var/lib/redis-0"}
+{"ip": "203.0.113.11", "port": 6379, "svc": "REDIS", "ev": "/var/lib/redis-1"}
+{"ip": "203.0.113.12", "port": 6379, "svc": "REDIS", "ev": "/var/lib/redis-2"}
+{"ip": "203.0.113.13", "port": 6379, "svc": "REDIS", "ev": "/var/lib/redis-3"}
+{"ip": "203.0.113.14", "port": 6379, "svc": "REDIS", "ev": "/var/lib/redis-4"}
+{"ip": "203.0.113.15", "port": 6379, "svc": "REDIS", "ev": "/var/lib/redis-5"}
+{"ip": "203.0.113.16", "port": 6379, "svc": "REDIS", "ev": "/var/lib/redis-6"}
+{"ip": "203.0.113.17", "port": 6379, "svc": "REDIS", "ev": "/var/lib/redis-7"}
+{"ip": "203.0.113.18", "port": 6379, "svc": "REDIS", "ev": "/var/lib/redis-8"}
+{"ip": "203.0.113.19", "port": 6379, "svc": "REDIS", "ev": "/var/lib/redis-9"}
+{"ip": "203.0.113.20", "port": 6379, "svc": "REDIS", "ev": "/var/lib/redis-10"}
+{"ip": "203.0.113.21", "port": 6379, "svc": "REDIS", "ev": "/var/lib/redis-11"}
+{"ip": "198.51.100.20", "port": 6379, "svc": "REDIS", "ev": "/data"}
+{"ip": "198.51.100.21", "port": 6379, "svc": "REDIS", "ev": "/data"}
+{"ip": "198.51.100.22", "port": 6379, "svc": "REDIS", "ev": "/data"}
+{"ip": "198.51.100.23", "port": 6379, "svc": "REDIS", "ev": "/data"}
+{"ip": "198.51.100.31", "port": 6379, "svc": "REDIS", "ev": "/etc"}
+{"ip": "192.0.2.40", "port": 11211, "svc": "MEMCACHED", "ev": "STAT pid 2080\nSTAT uptime 3151236\nSTAT version 1.4.13"}
+{"ip": "192.0.2.41", "port": 11211, "svc": "MEMCACHED", "ev": "STAT pid 2080\nSTAT uptime 3151236\nSTAT version 1.4.13"}
+{"ip": "192.0.2.42", "port": 11211, "svc": "MEMCACHED", "ev": "STAT pid 2080\nSTAT uptime 3151236\nSTAT version 1.4.13"}
+{"ip": "192.0.2.51", "port": 11211, "svc": "MEMCACHED", "ev": "STAT pid 9911\nSTAT uptime 5395219\nSTAT version 1.6.9"}
+{"ip": "192.0.2.60", "port": 9200, "svc": "ES", "ev": "HTTP/1.0 200 OK content-type: application/json"}
+{"ip": "192.0.2.61", "port": 9200, "svc": "ES", "ev": "HTTP/1.0 200 OK content-type: application/json"}

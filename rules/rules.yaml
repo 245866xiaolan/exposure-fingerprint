@@ -1,0 +1,226 @@
+# exposure-fingerprint rule set
+# 19 rules, four families. Machine-readable; consumed by analyze.py and by downstream pipelines.
+version: 2
+updated: 2026-11-21
+
+rules:
+  # ---------- structural ----------
+  - id: structural.shared-memcached-identity
+    services: [MEMCACHED]
+    match:
+      all:
+        - field: pid
+          op: duplicate_across_hosts
+          min_hosts: 2
+    action: DECOY
+    confidence: 0.98
+    note: cloned image reuses one process identity
+
+  - id: structural.frozen-uptime-set
+    services: [MEMCACHED]
+    match:
+      any:
+        - field: uptime
+          op: in
+          values: [3151236, 23989]
+    action: DECOY
+    confidence: 0.97
+
+  - id: structural.shared-es-cluster
+    services: [ES]
+    match:
+      all:
+        - field: cluster_name
+          op: duplicate_across_hosts
+          min_hosts: 2
+        - field: node_name
+          op: duplicate_across_hosts
+          min_hosts: 2
+    action: DECOY
+    confidence: 0.95
+
+  - id: structural.shared-redis-dir
+    services: [REDIS]
+    match:
+      all:
+        - field: dir
+          op: duplicate_across_hosts
+          min_hosts: 12
+    action: REVIEW
+    confidence: 0.72
+    note: common installs may legitimately share /data
+
+  - id: structural.single-tenant-fleet
+    services: [REDIS, MEMCACHED, ES]
+    match:
+      all:
+        - field: uptime
+          op: identical_to
+          window: 3
+    action: DECOY
+    confidence: 0.90
+
+  # ---------- temporal ----------
+  - id: temporal.uptime-not-advancing
+    services: [REDIS, MEMCACHED]
+    match:
+      all:
+        - field: uptime_in_seconds
+          op: delta
+          expected: ">0"
+          interval_s: 45
+    reverse: DECOY
+    confidence: 0.96
+    note: cheapest and most decisive signal
+
+  - id: temporal.keyspace-monotonic
+    services: [REDIS]
+    match:
+      all:
+        - field: keyspace_keys_total
+          op: delta
+          expected: ">=0"
+    confidence: 0.55
+
+  - id: temporal.replay-window
+    services: [REDIS, MEMCACHED]
+    match:
+      all:
+        - field: uptime_in_seconds
+          op: delta
+          expected: "==0"
+        - field: uptime_in_seconds
+          op: modulo
+          values: [60, 3600]
+    action: DECOY
+    confidence: 0.88
+
+  # ---------- protocol ----------
+  - id: protocol.resp-framing
+    services: [REDIS]
+    match:
+      any:
+        - field: resp_reply
+          op: not_matching
+          pattern: "^(\\+|\\-|\\*|\\$|:)"
+    action: DECOY
+    confidence: 0.80
+
+  - id: protocol.info-impossible
+    services: [REDIS]
+    match:
+      any:
+        - field: os
+          op: empty
+          when: redis_version_present
+        - field: run_id
+          op: length
+          not_equals: 40
+    action: DECOY
+    confidence: 0.85
+
+  - id: protocol.keyspace-mismatch
+    services: [REDIS]
+    match:
+      all:
+        - field: dbsize
+          op: not_equals
+          field2: keyspace_keys_total
+    action: REVIEW
+    confidence: 0.70
+    note: a real instance keeps DBSIZE and INFO keyspace in sync
+
+  - id: protocol.memcached-stats-shape
+    services: [MEMCACHED]
+    match:
+      any:
+        - field: stats_required_keys
+          op: missing
+          values: [pid, uptime, version, curr_connections]
+    action: DECOY
+    confidence: 0.82
+
+  # ---------- content ----------
+  - id: content.trap-directory
+    services: [REDIS]
+    match:
+      any:
+        - field: dir
+          op: in
+          values: ["/etc", "/etc/cron.d", "/var/spool/cron"]
+    action: DECOY
+    confidence: 0.93
+    note: pre-planted persistence bait
+
+  - id: content.decoy-model-names
+    services: [OLLAMA]
+    match:
+      any:
+        - field: models
+          op: contains_any
+          values: ["beacon", "probe", "sysverify", "verif_sys", "zzvitals"]
+    action: DECOY
+    confidence: 0.90
+
+  - id: content.commercial-model-passthrough
+    services: [OLLAMA]
+    match:
+      any:
+        - field: models
+          op: contains_any
+          values: ["gpt-4o", "claude", "gemini", "grok"]
+    action: DECOY
+    confidence: 0.92
+    note: reverse proxy fronting a paid API is not a local runtime
+
+  - id: content.fake-shadow-leak
+    services: [WEB]
+    match:
+      any:
+        - field: body
+          op: regex
+          pattern: "^[a-z]+:\\$[0-9a-zA-Z./]{13}:"
+        - field: body
+          op: contains_any
+          values: ["VULNERABLE", "uid=0(root"]
+    action: DECOY
+    confidence: 0.95
+    note: decoys leak "credentials" as bait
+
+  - id: content.docker-identical-info
+    services: [DOCKER]
+    match:
+      all:
+        - field: Name
+          op: duplicate_across_hosts
+          min_hosts: 2
+        - field: ServerVersion
+          op: duplicate_across_hosts
+          min_hosts: 2
+    action: DECOY
+    confidence: 0.94
+
+  - id: content.always-200
+    services: [WEB]
+    match:
+      all:
+        - field: distinct_paths
+          op: ">="
+          value: 5
+        - field: distinct_responses
+          op: "=="
+          value: 1
+    action: DECOY
+    confidence: 0.87
+    note: a server that answers identically to every path is a mock
+
+  - id: content.rompager-on-docker-port
+    services: [DOCKER]
+    match:
+      any:
+        - field: server_header
+          op: contains_any
+          values: ["RomPager", "moxa", "Boa/"]
+    action: DECOY
+    confidence: 0.89
+    note: 2375 answering with embedded-device firmware
