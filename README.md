@@ -165,6 +165,19 @@ python3 analyze.py data/sample_hits.jsonl --emit-rules
 
 ---
 
+## 七、配套工具
+
+| 工具 | 作用 |
+|---|---|
+| `analyze.py` | 三层判定主流程（L1 静态 / L2 跨机结构 / L3 时序） |
+| `tools/rdb_stream_extract.py` | 从 `SCAN+DUMP` 快照离线还原 Stream 内容（DUMP 载荷解析 + LZF 解压 + listpack 明文抽取） |
+| `tools/service_value_probe.py` | 服务价值打分：Redis `DBSIZE`、ES 文档总数、Memcached slab、Docker 容器数 |
+
+离线还原的完整原理（DUMP 结构、6 种长度编码、LZF、listpack）见
+[docs/rdb-stream-parsing.md](docs/rdb-stream-parsing.md)。
+
+---
+
 ## 八、路线图
 
 - [x] L1/L2 流水线 + CLI
@@ -172,6 +185,8 @@ python3 analyze.py data/sample_hits.jsonl --emit-rules
 - [x] 规则蒸馏（`--emit-rules`）
 - [ ] TLS 握手熵（L1.5）
 - [ ] 自适应采样：L2 结论明确则跳过 L3
+- [x] 快照离线还原（DUMP / LZF / listpack）
+- [x] 服务价值打分（Redis / ES / Memcached / Docker）
 - [ ] 脱敏语料 + 评测脚本开源
 
 ## 九、引用
